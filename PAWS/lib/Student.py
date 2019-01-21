@@ -7,8 +7,8 @@ class Student():
     """
     def __init__(self, sid):
         self.sid = sid
-        self.connection = dbl.connect(database='bhashithe', user='bhashithe')
-        #self.connection = Database.getconnection()
+        #self.connection = dbl.connect(database='bhashithe', user='bhashithe')
+        self.connection = Database.getconnection()
 
     def getdata(self):
         """
