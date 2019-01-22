@@ -35,3 +35,13 @@ class Student():
             except (Exception, dbl.DatabaseError) as e:
                 self.connection.rollback()
                 print(e)
+    
+    @staticmethod
+    def student_list(dept):
+        connection = Database.getconnection()
+        with connection.cursor() as cur:
+            try:
+                cur.execute(f"SELECT sid FROM student WHERE majordept LIKE '{dept}'")
+                return cur.fetchall()
+            except (Exception, dbl.DatabaseError) as e:
+                print(e)
