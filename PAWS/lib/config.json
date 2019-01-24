@@ -1,6 +1,6 @@
 {
 	'host': 'localhost',
-	'name': 'bhashithe',
+	'dbname': 'bhashithe',
 	'user': 'bhashithe',
 	'password': 'lotus123'
 }
