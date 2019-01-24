@@ -41,7 +41,18 @@ class Student():
         connection = Database.getconnection()
         with connection.cursor() as cur:
             try:
-                cur.execute(f"SELECT sid FROM student WHERE majordept LIKE '{dept}'")
+                cur.execute(f"SELECT * FROM student WHERE majordept LIKE '{dept}%'")
+                return cur.fetchall()
+            except (Exception, dbl.DatabaseError) as e:
+                print(e)
+
+
+    @staticmethod
+    def enrollment_list(dept, term):
+        connection = Database.getconnection()
+        with connection.cursor() as cur:
+            try:
+                cur.execute(f"SELECT enroll.* FROM enroll INNER JOIN section ON(enroll.crn=section.crn) WHERE section.cprefix LIKE '{dept}%' and section.term='{term}'")
                 return cur.fetchall()
             except (Exception, dbl.DatabaseError) as e:
                 print(e)

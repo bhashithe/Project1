@@ -14,10 +14,24 @@ class Admin():
 		with connection.cursor() as cur:
 			for data in alldata:
 				try:
-					#sid, email, name, lndata['sid'], data['email'], data['name'], data['lname'], data['majordept'], data['gradassistant']
 					sql = f"INSERT INTO student (sid, email, fname, lname, majordept, gradassistant) VALUES({data['sid']}, '{data['email']}', '{data['fname']}', '{data['lname']}', '{data['majordept']}', '{data['gradassistant']}')"
 					cur.execute(sql)
 					connection.commit()
 				except (Exception, dbl.DatabaseError) as e:
 					connection.rollback()
 					print(e)
+
+	@staticmethod
+	def update_grade(sid, term, year, crn, grade):
+		"""
+		update a grade of a given student
+		"""
+		connection = Database.getconnection()
+		with connection.cursor() as cur:
+			try:
+				sql = f"UPDATE enroll SET grade='{grade}' WHERE sid={sid} AND term='{term}' AND year={year} AND crn={crn}"
+				cur.execute(sql)
+				connection.commit()
+			except (Exception, dbl.DatabaseError) as e:
+				connection.rollback()
+				print(e)
