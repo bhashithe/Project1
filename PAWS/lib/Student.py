@@ -30,10 +30,54 @@ class Student():
             #simple password hashing
             password = hashlib.md5(password.encode('utf-8')).hexdigest()
             try:
-                cur.execute(f"UPDATE student SET password = '{password}' WHERE sid = {self.sid}")
-                self.connection.commit()
+                cur.execute(f"SELECT us from student where sid = {self.sid}")
+                updated = cur.fetchone()
+                if updated[0] == 1:
+                    return False
+                else:
+                    cur.execute(f"UPDATE student SET password = '{password}', us = 1 WHERE sid = {self.sid}")
+                    self.connection.commit()
+                    return True
             except (Exception, dbl.DatabaseError) as e:
                 self.connection.rollback()
+                print(e)
+
+    def login(self, password):
+        """
+        logs a user in to the system and the redirect to home
+        """
+        with self.connection.cursor() as cur:
+            password = hashlib.md5(password.encode('utf-8')).hexdigest()
+            try:
+                cur.execute(f"SELECT password FROM student WHERE sid={self.sid} LIMIT 1")
+                fetched_password = cur.fetchone()
+                if password == fetched_password[0]:
+                    return True
+                else:
+                    return False
+            except (Exception, dbl.DatabaseError) as e:
+                print(e)
+
+    def getyears(self):
+        """
+        gets all the years of the system
+        """
+        with self.connection.cursor() as cur:
+            try:
+                cur.execute(f"SELECT DISTINCT year FROM section")
+                return cur.fetchall()
+            except (Exception, dbl.DatabaseError) as e:
+                print(e)
+
+    def getsems(self):
+        """
+        gets all the semesters of the system
+        """
+        with self.connection.cursor() as cur:
+            try:
+                cur.execute(f"SELECT DISTINCT term FROM section")
+                return cur.fetchall()
+            except (Exception, dbl.DatabaseError) as e:
                 print(e)
     
     @staticmethod
