@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Auth from '../Auth/Auth';
 
 import './App.css';
 
@@ -16,7 +15,7 @@ const App = ({ children }) => (
         <li className="logo">
           <a id="logo-container" href="http://www.linawheretogo.com/" className="brand-logo">
             {/*<object id="front-page-logo" type="image/svg+xml" data="../../logo.png"></object>*/}
-            Personal Website
+            Project1 Website
           </a>
         </li>
         <li className="bold"><a href="/news" className="waves-effect waves-teal">News Management</a></li>

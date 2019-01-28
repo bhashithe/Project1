@@ -2,32 +2,30 @@ import _ from 'lodash';
 
 import React from 'react';
 
-import Auth from '../Auth/Auth';
-import NewsCard from './NewsCard';
 
-class News extends React.Component{
+class info extends React.Component{
   constructor() {
     super();
-    this.state = {news:null};
+    this.state = {info:null};
     this.handleScroll = this.handleScroll.bind(this);
   }
 
   componentDidMount() {
-    this.loadMoreNews();
-    this.loadMoreNews = _.debounce(this.loadMoreNews, 1000);
+    this.loadMoreinfo();
+    this.loadMoreinfo = _.debounce(this.loadMoreinfo, 1000);
     window.addEventListener('scroll', this.handleScroll);
   }
 
   handleScroll() {
     let scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
     if ((window.innerHeight + scrollY) >= (document.body.offsetHeight - 50)) {
-      console.log('Loading more news');
-      this.loadMoreNews();
+      console.log('Loading more info');
+      this.loadMoreinfo();
     }
   }
 
-  loadMoreNews() {
-    let request = new Request('http://localhost:8080/news', {
+  loadMoreinfo() {
+    let request = new Request('http://localhost:8080/info', {
       method: 'GET',
       headers: {
         'Authorization': 'bearer ' + Auth.getToken(),
@@ -37,18 +35,18 @@ class News extends React.Component{
 
     fetch(request)
       .then((res) => res.json())
-      .then((news) => {
+      .then((info) => {
         this.setState({
-          news: this.state.news? this.state.news.concat(news) : news,
+          info: this.state.info? this.state.info.concat(info) : info,
         });
       });
   }
 
-  renderNews() {
-    let news_list = this.state.news.map(function(news) {
+  renderinfo() {
+    let info_list = this.state.info.map(function(info) {
       return(
         <a className='list-group-item' href="#">
-          <NewsCard news={news} />
+          <infoCard info={info} />
         </a>
       );
     });
@@ -56,17 +54,17 @@ class News extends React.Component{
     return(
       <div className="container-fluid">
         <div className='list-group'>
-          {news_list}
+          {info_list}
         </div>
       </div>
     );
   }
 
   render() {
-    if (this.state.news) {
+    if (this.state.info) {
         return(
           <div>
-            {this.renderNews()}
+            {this.renderinfo()}
           </div>
         );
     } else {
@@ -81,4 +79,4 @@ class News extends React.Component{
   }
 }
 
-export default News;
+export default info;

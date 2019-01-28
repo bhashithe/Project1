@@ -37,19 +37,19 @@ class App extends Component {
           </a>
           <a
             className="App-link"
-            href="/students"
+            href="/assistantship"
             target="_blank"
             rel="noopener noreferrer"
           >
-            All assistantship
+            Undate assistantship
           </a>
           <a
             className="App-link"
-            href="/students"
+            href="/grade"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Level statistics
+            Input Grade
           </a>
         </header>
       </div>
