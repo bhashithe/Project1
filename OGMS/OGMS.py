@@ -1,62 +1,137 @@
-from flask import Flask, request, render_template, session, redirect, Session
-from flask.json import jsonify
-from lib.Database import Database
-from lib.Student import Student
-from lib.Admin import Admin
-from lib.Department import Department
-
-import requests
+from flask import Flask
+import psycopg2
 import json
 
-app = Flask(__name__)
-sess = Session()
+from flask_cors import CORS
+from flask import request, render_template, send_from_directory
 
-@app.route('/')
-def index():
-    return redirect('/home/')
+app = Flask(__name__,static_url_path='')
+CORS(app)
+app.config['WTF_CSRF_ENABLED'] = False
 
-@app.route('/home/')
-def home():
-    return redirect('/home.html')
-  
-@app.route('/dummy', methods=['GET'])
-def dummy_data():
-  ####################### GET from PAWS database ##################
-    data = [{"sid":1009, "email":"varshi@gmail.com", "fname":"Varshi", "lname":"Abeysinghe", "majordept":"CSC", "gradassistant":"Y"}]
-    return jsonify(data)
+############################ TBD ####################
 
-@app.route('/request/', methods=['GET'])
-def request_accepted():
-  ####################### TBD change 'dummy' to GET from PAWS database ##################
-    data = json.loads(requests.get('http://localhost:5013/dummy').content)
-    Admin.accepted_req(data)
-    return 'student added'
+#app = Flask(__name__)
 
-@app.route('/students/<string:dept>/', methods=['GET'])
-def students_dept(dept):
-    return jsonify(Student.student_list(dept))
+def shutdown_server():
+  func = request.environ.get('werkzeug.server.shutdown')
+  if func is None:
+    raise RuntimeError('Not running with the Werkzeug Server')
+  func()
 
-@app.route('/courses/<string:dept>/', methods=['GET'])
-def course_dept(dept):
-    return jsonify(Department.getcourses(dept))
+def getAdvisors():
+  con = psycopg2.connect(database='grad', user='raj')
+  cur = con.cursor()
+  cur.execute('(select distinct advisor from phd) union (select advisor from masters) order by advisor')
+  columns = ['advisor']
+  advisors = []
+  rows = cur.fetchall()
+  for row in rows:
+    if row[0] != '':
+      #advisors.append(dict(zip(columns,row)))
+      advisors.append(row[0])
+  con.close()
+  result = {"advisors":advisors}
+  return json.dumps(result, indent=2)
 
-@app.route('/students/enrolled/<string:dept>/<string:term>/', methods=['GET'])
-def enrollment(dept, term):
-    return jsonify(Student.enrollment_list(dept, term))
+def getYears():
+  con = psycopg2.connect(database='grad', user='raj')
+  cur = con.cursor()
+  cur.execute('(select distinct year from phd) union (select year from masters) order by year')
+  columns = ['year']
+  years = []
+  rows = cur.fetchall()
+  for row in rows:
+    if row[0] != '':
+      #years.append(dict(zip(columns,row)))
+      years.append(row[0])
+  con.close()
+  result = {"years":years}
+  return json.dumps(result, indent=2)
 
-@app.route('/Admin/student/<int:sid>/assistantship/<int:crn>/', methods=['POST'])
-def update_assistantship(sid):
-    if request.json:
-        Admin.update_assistantship(sid, request.json['term'], request.json['year'], crn, request.json['assistantship'])
-        return "update successfull"
+def getPhDStudentsGivenAdvisor(adv) :
+  con = psycopg2.connect(database='grad', user='raj')
+  cur = con.cursor()
+  cur.execute('select snum, sname, advisor, coadvisor, month, year from phd where advisor=\''+adv+'\' or coadvisor=\''+adv+'\' order by year, month')
+  columns = ['snum','sname','advisor','coadvisor','month','year']
+  answers = []
+  rows = cur.fetchall()
+  for row in rows:
+    answers.append(dict(zip(columns,row)))
+  con.close()
+  result = {"students":answers}
+  return json.dumps(result, indent=2)
 
-@app.route('/Admin/student/<int:sid>/grade/<int:crn>/', methods=['POST'])
-def update_grade(sid, crn):
-    if request.json:
-        Admin.update_grade(sid, request.json['term'], request.json['year'], crn, request.json['grade'])
-        return "update successfull"
+def getMSStudentsGivenAdvisor(adv) :
+  con = psycopg2.connect(database='grad', user='raj')
+  cur = con.cursor()
+  cur.execute('select snum, sname, type, month, year from masters where advisor=\''+adv+'\' order by year,month desc')
+  columns = ['snum','sname','type','month','year']
+  answers = []
+  rows = cur.fetchall()
+  for row in rows:
+    answers.append(dict(zip(columns,row)))
+  con.close()
+  result = {"students":answers}
+  return json.dumps(result, indent=2)
 
-if __name__ =='__main__':
-    app.secret_key = 'super secret key here gghalfndfacvdaewa'
-    app.config['SESSION_TYPE'] = 'filesystem'
-    app.run(host='tinman.cs.gsu.edu', debug=True, port=5013)
+def getPhDStudentsGivenAdvisorYear(adv,yr) :
+  con = psycopg2.connect(database='grad', user='raj')
+  cur = con.cursor()
+  cur.execute('select snum, sname, advisor, coadvisor, month from phd where (advisor=\''+adv+'\' or coadvisor=\''+adv+'\') and year = '+str(yr)+' order by year, month')
+  columns = ['snum','sname','advisor','coadvisor','month']
+  answers = []
+  rows = cur.fetchall()
+  for row in rows:
+    answers.append(dict(zip(columns,row)))
+  con.close()
+  result = {"students":answers}
+  return json.dumps(result, indent=2)
+
+def getMSStudentsGivenAdvisorYear(adv,yr) :
+  con = psycopg2.connect(database='grad', user='raj')
+  cur = con.cursor()
+  cur.execute('select snum, sname, type, month from masters where advisor=\''+adv+
+              '\' and year = '+str(yr)+' order by year, month')
+  columns = ['snum','sname','type','month']
+  answers = []
+  rows = cur.fetchall()
+  for row in rows:
+    answers.append(dict(zip(columns,row)))
+  con.close()
+  result = {"students":answers}
+  return json.dumps(result, indent=2)
+
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    shutdown_server()
+    return 'Server shutting down...'
+
+@app.route('/grad/advisors', methods=['GET'])
+def get_advisors():
+  return getAdvisors()
+
+@app.route('/grad/years', methods=['GET'])
+def get_years():
+  return getYears()
+
+@app.route('/grad/<string:adv>/<string:deg>', methods=['GET'])
+def get_students_given_advisor_degree(adv,deg):
+  if deg == "phd":
+    return getPhDStudentsGivenAdvisor(adv) 
+  elif deg == "ms":
+    return getMSStudentsGivenAdvisor(adv)
+  else:
+    return json.dumps({"error": "Invalid Degree"})
+
+@app.route('/grad/<string:adv>/<string:deg>/<int:yr>', methods=['GET'])
+def get_students_given_advisor_degree_year(adv,deg,yr):
+  if deg == "phd":
+    return getPhDStudentsGivenAdvisorYear(adv,yr) 
+  elif deg == "ms":
+    return getMSStudentsGivenAdvisorYear(adv,yr)
+  else:
+    return json.dumps({"error": "Invalid Degree"})
+
+if __name__ == '__main__':
+    app.run(host='tinman.cs.gsu.edu',debug=True)
