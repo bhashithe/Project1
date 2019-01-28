@@ -1,3 +1,2 @@
 *.swp
-*.sql
-PAWS/lib/__pycache__/
+paws.sql
