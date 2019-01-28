@@ -1,0 +1,10 @@
+.Base {
+	text-align: center;
+}
+.pageTitleStyle {
+	line-height: 100px;
+	font-size: 48px;
+}
+.topBarStyle {
+	height: 100px;
+}
