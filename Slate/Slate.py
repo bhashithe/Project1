@@ -7,12 +7,6 @@ from passlib.hash import sha256_crypt
 
 app = Flask(__name__)
 
-# get a connection, if a connect cannot be made an exception will be raised here
-conn = dbl.connect(database='graddb', user='Cynthia', password='123')
- 
-# conn.cursor will return a cursor object, you can use this cursor to perform queries
-cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-
 class RegisterForm(Form):
     fname = StringField('First Name', [validators.length(min=1, max=50)])
     lname = StringField('Last Name', [validators.length(min=1, max=50)])
@@ -31,14 +25,68 @@ def register():
         lname = form.lname.data
         email = form.email.data
         password = form.password.data
+        try:
+            connection = psycopg2.connect(user="Cynthia",
+                                      password="123",
+                                      host="127.0.0.1",
+                                      port="5432",
+                                      database="graddb")
+            cursor = connection.cursor()
+            postgreSQL_select_Query = "INSERT INTO applicant(email,password,fname,lname) values (%s, %s, %s, %s);"
+            cursor.execute(postgreSQL_select_Query, (email, password, fname, lname))
+            connection.commit()
 
-        cursor.execute("INSERT INTO applicant(fname, lname, email, password) VALUES(%s, %s, %s, %s)", (fname, lname, email, password))
+            flash('You are now registered and can log in', 'success')
 
-        flash('You are now registered and can log in', 'success')
+        except (Exception, psycopg2.Error) as error:
+            print("Error fetching data from PostgreSQL table", error)
+        finally:
+            # closing database connection
+            if (connection):
+                cursor.close()
+                connection.close()
 
-        return 'Registered'
-
+        return redirect(url_for('register'))
+    
     return render_template('register.html', form=form)
+
+# User login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    if request.method == 'POST':
+        # Get Form Fields
+        username = request.form['username']
+        password_candidate = request.form['password']
+
+        # Get user by username
+        cursor.execute("SELECT email, password FROM applicant WHERE email = %s;", (username,))
+        
+        if cursor.rowcount > 0:
+            # Get stored hash
+            data = cursor.fetchone()
+            password = data['password']
+
+            # Compare Passwords
+            if (password_candidate == password):
+                # Passed
+                session['logged_in'] = True
+                session['username'] = username
+
+                flash('You are now logged in', 'success')
+                return redirect(url_for('register'))
+            else:
+                error = 'Invalid login'
+                return render_template('login.html', error=error)
+            # Close connection
+            cursor.close()
+        else:
+            error = 'Username not found'
+            return render_template('login.html', error=error)
+
+    return render_template('login.html')
 
 if __name__ == '__main__':
      app.secret_key='secret123'
