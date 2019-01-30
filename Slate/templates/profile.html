@@ -1,0 +1,67 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="jumbotron text-center">
+<h2 style = "text-align: center;">Profile</h2>
+
+{% if session.logged_in != NULL %}
+{% for message in form.fname.errors %}
+   <div>{{ message }}</div>
+{% endfor %}
+
+{% for message in form.lname.errors %}
+   <div>{{ message }}</div>
+{% endfor %}
+
+<form action = "" method = "POST">
+   <fieldset>
+      <legend>{{session.email}}</legend>
+      {{ form.hidden_tag() }}
+      
+      <div style = font-size:20px; font-weight:bold; margin-left:150px;>
+         {{ form.fname.label }}<br>
+         {{ form.fname }}
+         <br>
+         {{ form.lname.label }}<br>
+         {{ form.lname }}
+         <br>
+         {{ form.Address1.label }}<br>
+         {{ form.Address1 }}
+         <br>
+         {{ form.Address2.label }}<br>
+         {{ form.Address2 }}
+         <br>
+         {{ form.city.label }}<br>
+         {{ form.city }}
+         <br>
+         {{ form.state.label }}<br>
+         {{ form.state }}
+         <br>
+         {{ form.zipcode.label }}<br>
+         {{ form.zipcode }}
+         <br>
+         {{ form.GREQ.label }}<br>
+         {{ form.GREQ }}
+         <br>
+         {{ form.GREV.label }}<br>
+         {{ form.GREV }}
+         <br>
+         {{ form.GREA.label }}<br>
+         {{ form.GREA }}
+         <br>
+         {{ form.TOEFL.label }}<br>
+         {{ form.TOEFL }}
+         <br>   
+         <p></p>
+         <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+      </div>
+      
+   </fieldset>
+</form>
+{% endif %}
+{% if session.logged_in == NULL %}
+    <a href="/register" class="btn btn-primary btn-lg">Register</a>
+    <a href="/login" class="btn btn-success btn-lg">Login</a>
+{% endif %}
+</div>
+{% endblock %}

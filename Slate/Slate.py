@@ -2,8 +2,9 @@ from flask import Flask, render_template, flash, redirect, request, url_for, ses
 import psycopg2 as dbl
 import psycopg2.extras
 import sys
-from wtforms import Form, StringField, TextAreaField, PasswordField, validators
-from passlib.hash import sha256_crypt
+from flask_wtf import Form
+from wtforms import StringField, PasswordField, TextField, IntegerField, TextAreaField, SubmitField, RadioField, SelectField
+from wtforms import validators, ValidationError
 
 app = Flask(__name__)
 
@@ -69,12 +70,14 @@ def login():
             data = cursor.fetchone()
             password = data['password']
             fname = data['fname']
+            email = username
 
             # Compare Passwords
             if (password_candidate == password):
                 # Passed
                 session['logged_in'] = True
                 session['username'] = fname
+                session['email'] = email
 
                 return redirect(url_for('home'))
             else:
@@ -101,6 +104,52 @@ def home():
         return render_template('profile.html')
     return render_template('home.html')
 
+class ContactForm(Form):
+   fname = TextField("First Name",[validators.Required("Please enter a first name.")])
+   lname = TextField("Last Name",[validators.Required("Please enter a last name.")])
+   Address1 = TextField("Address1",[validators.Required("Please enter a street")])
+   Address2 = TextField("Address2")
+   city = TextField("City",[validators.Required("Please enter a city")])
+   state = SelectField('State', choices = [('GA', 'GA'), 
+      ('TX', 'TX')])
+   zipcode = IntegerField("Zipcode",[validators.Required("Please enter a valid zipcode")])
+   GREQ = IntegerField("GREQ")
+   GREV = IntegerField("GREV")
+   GREA = IntegerField("GREA")
+   TOEFL = IntegerField("TOEFL")
+   
+   submit = SubmitField("Send")
+    
+
+@app.route('/profile', methods = ['GET', 'POST'])
+def profile():
+    form = ContactForm()
+    email = session['email']
+    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    if request.method == 'POST':
+        if form.validate() == False:
+            flash('All fields are required.')
+            return render_template('profile.html', form = form)
+        else:
+            fname = form.fname.data
+            lname = form.lname.data
+            Address1 = form.Address1.data
+            Address2 = form.Address2.data
+            city = form.city.data
+            state = form.state.data
+            zipcode = form.zipcode.data
+            GREQ = form.GREQ.data
+            GREV = form.GREV.data
+            GREA = form.GREA.data
+            TOEFL = form.TOEFL.data
+            
+            postgreSQL_select_Query = "UPDATE applicant SET fname=%s,lname=%s, address1=%s, address2=%s, city=%s, state=%s, zip=%s, greq=%s, grev=%s, grea=%s, toefl=%s where email=%s;"
+            cursor.execute(postgreSQL_select_Query, (fname, lname, Address1, Address2, city, state, zipcode, GREQ, GREV, GREA, TOEFL, email))
+            conn.commit()
+            print('Profile updated')
+    return render_template('profile.html', form = form)
+   
 if __name__ == '__main__':
      app.secret_key='secret123'
      app.run(debug=True)
