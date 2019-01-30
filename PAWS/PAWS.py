@@ -24,7 +24,7 @@ def home():
         return redirect('/login/')
     else:
         if request.method == 'GET':
-            return render_template('home.html', login=session['logged_in'], user=Student(session['id']))
+            return render_template('home.html', login=session['logged_in'], user=Student(session['id']), depts=Department.getdepts())
 
 @app.route('/register/', methods=['GET','POST'])
 def register():
@@ -42,7 +42,7 @@ def register():
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
-        return render_template('login.html', login=session['logged_in'])
+        return render_template('login.html')
     elif request.method == 'POST':
         s = Student(request.form['sid'])
         if s.login(request.form['password']):
@@ -60,6 +60,35 @@ def logout():
    session['logged_in'] = False
    session['id'] = False
    return redirect('/login/')
+
+"""
+* Services
+"""
+
+@app.route('/home/data/', methods=['POST'])
+def home_data():
+    term, year, dept = request.json['term'], request.json['year'], request.json['dept']
+    courses = Department.getcourses_data(term, year, dept)
+    return jsonify(courses)
+
+@app.route('/home/add/', methods=['POST'])
+def register_course():
+    term, year, crn = request.json['term'], request.json['year'], request.json['crn']
+    s = Student(session['id'])
+    s.add_course(term, year, crn)
+    return "success"
+
+@app.route('/home/drop/', methods=['POST'])
+def deregister_course():
+    term, year, crn = request.json['term'], request.json['year'], request.json['crn']
+    s = Student(session['id'])
+    s.drop_course(term, year, crn)
+    return "success"
+
+@app.route('/students/my-courses/<int:year>/<string:term>/', methods=['GET'])
+def registered_corses(year, term):
+    s = Student(session['id'])
+    return jsonify(s.my_courses(term, year))
 
 @app.route('/dummy', methods=['GET'])
 def dummy_data():
