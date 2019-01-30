@@ -80,6 +80,38 @@ class Student():
             except (Exception, dbl.DatabaseError) as e:
                 print(e)
     
+    def add_course(self, term, year, crn):
+        """
+        adds a course to a students enrollment
+        """
+        with self.connection.cursor() as cur:
+            try:
+                cur.execute(f"INSERT INTO enroll (sid, term, year, crn) VALUES ({self.sid},'{term}',{year},{crn})")
+                self.connection.commit()
+            except (Exception, dbl.DatabaseError) as e:
+                self.connection.rollback()
+                print(e)
+    
+    def drop_course(self, term, year, crn):
+        with self.connection.cursor() as cur:
+            try:
+                cur.execute(f"DELETE FROM enroll WHERE sid= {self.sid} AND term = '{term}' AND year = {year} AND crn = {crn}")
+                self.connection.commit()
+            except (Exception, dbl.DatabaseError) as e:
+                self.connection.rollback()
+                print(e)
+
+    def my_courses(self, term, year):
+        """
+        select all courses that I  have registered
+        """
+        with self.connection.cursor() as cur:
+            try:
+                cur.execute(f"SELECT crn FROM enroll WHERE term='{term}' AND year={year} AND sid = {self.sid}")
+                return cur.fetchall()
+            except (Exception, dbl.DatabaseError) as e:
+                print(e)
+
     @staticmethod
     def student_list(dept):
         connection = Database.getconnection()
@@ -96,7 +128,7 @@ class Student():
         connection = Database.getconnection()
         with connection.cursor() as cur:
             try:
-                cur.execute(f"SELECT enroll.* FROM enroll INNER JOIN section ON(enroll.crn=section.crn) WHERE section.cprefix LIKE '{dept}%' and section.term='{term}'")
+                cur.execute(f"SELECT DISTINCT enroll.* FROM enroll INNER JOIN section ON(enroll.crn=section.crn) WHERE section.cprefix LIKE '{dept}%' and enroll.term='{term}'")
                 return cur.fetchall()
             except (Exception, dbl.DatabaseError) as e:
                 print(e)
