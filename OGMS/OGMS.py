@@ -17,7 +17,7 @@ def index():
 
 @app.route('/home/')
 def home():
-    return redirect('/home.html')
+    return 'hello world'
   
 @app.route('/dummy', methods=['GET'])
 def dummy_data():
@@ -25,12 +25,18 @@ def dummy_data():
     data = [{"sid":1009, "email":"varshi@gmail.com", "fname":"Varshi", "lname":"Abeysinghe", "majordept":"CSC", "gradassistant":"Y"}]
     return jsonify(data)
 
+# @app.route('/request/<string:dept>', methods=['GET'])
+# def request_accepted(dept):
+#   ####################### TBD change 'dummy' to GET from PAWS database ##################
+#     data = json.loads(requests.get(f"http://tinman.cs.gsu.edu:5013/students/{dept}/").content)
+#     Admin.accepted_req(data)
+#     return 'student added'
 @app.route('/request/', methods=['GET'])
 def request_accepted():
   ####################### TBD change 'dummy' to GET from PAWS database ##################
-    data = json.loads(requests.get('http://localhost:5013/dummy').content)
+    data = json.loads(requests.get(f"http://tinman.cs.gsu.edu:5013/students/MATH/").content)
     Admin.accepted_req(data)
-    return 'student added'
+    return redirect('http://localhost:3000/#/Grade')
 
 @app.route('/students/<string:dept>/', methods=['GET'])
 def students_dept(dept):
@@ -59,4 +65,5 @@ def update_grade(sid, crn):
 if __name__ =='__main__':
     app.secret_key = 'super secret key here gghalfndfacvdaewa'
     app.config['SESSION_TYPE'] = 'filesystem'
-    app.run(host='tinman.cs.gsu.edu', debug=True, port=5013)
+    #app.run(host='tinman.cs.gsu.edu', debug=True, port=5014)
+    app.run(host='localhost', debug=True)

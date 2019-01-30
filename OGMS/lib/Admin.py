@@ -1,4 +1,4 @@
-from lib.Database import Database, dbl
+import psycopg2 as pg
 
 class Admin():
 	""" 
@@ -10,14 +10,14 @@ class Admin():
 		"""
 		gets the accepted students into database
 		"""
-		connection = Database.getconnection()
+		connection = pg.connect(dbname='lina_sample_db_project', user='lina')
 		with connection.cursor() as cur:
 			for data in alldata:
 				try:
-					sql = f"INSERT INTO student (sid, email, fname, lname, majordept, gradassistant) VALUES({data['sid']}, '{data['email']}', '{data['fname']}', '{data['lname']}', '{data['majordept']}', '{data['gradassistant']}')"
+					sql = f"INSERT INTO ostudent (sid, fname, lname) VALUES({data[0]}, '{data[3]}', '{data[4]}')"
 					cur.execute(sql)
 					connection.commit()
-				except (Exception, dbl.DatabaseError) as e:
+				except (Exception, pg.DatabaseError) as e:
 					connection.rollback()
 					print(e)
 
@@ -26,13 +26,13 @@ class Admin():
 		"""
 		update a grade of a given student
 		"""
-		connection = Database.getconnection()
+		connection = pg.connect(dbname='lina_sample_db_project', user='lina')
 		with connection.cursor() as cur:
 			try:
 				sql = f"UPDATE enroll SET update_assistantship='{update_assistantship}' WHERE sid={sid} AND term='{term}' AND year={year} AND crn={crn}"
 				cur.execute(sql)
 				connection.commit()
-			except (Exception, dbl.DatabaseError) as e:
+			except (Exception, pg.DatabaseError) as e:
 				connection.rollback()
 				print(e)
 
@@ -41,13 +41,13 @@ class Admin():
 		"""
 		update a grade of a given student
 		"""
-		connection = Database.getconnection()
+		connection = pg.connect(dbname='lina_sample_db_project', user='lina')
 		with connection.cursor() as cur:
 			try:
 				sql = f"UPDATE enroll SET grade='{grade}' WHERE sid={sid} AND term='{term}' AND year={year} AND crn={crn}"
 				cur.execute(sql)
 				connection.commit()
-			except (Exception, dbl.DatabaseError) as e:
+			except (Exception, pg.DatabaseError) as e:
 				connection.rollback()
 				print(e)
 
