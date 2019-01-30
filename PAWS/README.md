@@ -3,8 +3,8 @@ PAWS - Bhashithe
 ## Functions to creaete
 
 - [x] Register service 
-- [x] Choose semester
-- [x] Add drop coursesf
+- [ ] Choose semester
+- [ ] Add drop courses
 - [ ] View class schedule
 - [ ] View fees
 - [x] Request students from SLATE
