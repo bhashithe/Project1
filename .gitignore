@@ -1,2 +1,3 @@
 *.swp
 paws.sql
+node_modules/
