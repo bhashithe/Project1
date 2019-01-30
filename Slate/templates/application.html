@@ -1,0 +1,41 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="jumbotron text-center">
+<h2 style = "text-align: center;">Application</h2>
+
+{% if session.logged_in != NULL %}
+<form action = "" method = "POST">
+   <fieldset>
+      <legend>{{session.email}}</legend>
+      {{ form.hidden_tag() }}
+      
+      <div style = font-size:20px; font-weight:bold; margin-left:150px;>
+         {{ form.university.label }}<br>
+         {{ form.university }}
+         <br>
+         {{ form.dname.label }}<br>
+         {{ form.dname }}
+         <br>
+         {{ form.program.label }}<br>
+         {{ form.program }}
+         <br>
+         {{ form.term.label }}<br>
+         {{ form.term }}
+         <br> 
+         {{ form.year.label }}<br>
+         {{ form.year }}
+         <br> 
+         <p></p>
+         <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+      </div>
+      
+   </fieldset>
+</form>
+{% endif %}
+{% if session.logged_in == NULL %}
+    <a href="/register" class="btn btn-primary btn-lg">Register</a>
+    <a href="/login" class="btn btn-success btn-lg">Login</a>
+{% endif %}
+</div>
+{% endblock %}

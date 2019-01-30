@@ -2,6 +2,7 @@ from flask import Flask, render_template, flash, redirect, request, url_for, ses
 import psycopg2 as dbl
 import psycopg2.extras
 import sys
+import datetime
 from flask_wtf import Form
 from wtforms import StringField, PasswordField, TextField, IntegerField, TextAreaField, SubmitField, RadioField, SelectField
 from wtforms import validators, ValidationError
@@ -104,7 +105,7 @@ def home():
         return render_template('profile.html')
     return render_template('home.html')
 
-class ContactForm(Form):
+class ProfileForm(Form):
    fname = TextField("First Name",[validators.Required("Please enter a first name.")])
    lname = TextField("Last Name",[validators.Required("Please enter a last name.")])
    Address1 = TextField("Address1",[validators.Required("Please enter a street")])
@@ -123,7 +124,7 @@ class ContactForm(Form):
 
 @app.route('/profile', methods = ['GET', 'POST'])
 def profile():
-    form = ContactForm()
+    form = ProfileForm()
     email = session['email']
     conn = dbl.connect(database='graddb', user='Cynthia', password='123')
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -149,7 +150,63 @@ def profile():
             conn.commit()
             print('Profile updated')
     return render_template('profile.html', form = form)
-   
+
+class ApplicationForm(Form):
+   university = SelectField('Department',choices = [('GSU', 'GSU'), 
+      ('GSU', 'GSU')])
+   dname = SelectField('Department',choices = [('CSC', 'Computer Science'), 
+      ('PHYS', 'Physics')])
+   program = SelectField('Program',choices = [('MS', 'Masters'), 
+      ('PhD', 'PhD')])
+   term = SelectField('Term Of Admission', choices = [('FA', 'Fall'), 
+      ('SP', 'Spring'), ('SU', 'Summer')])
+   year = SelectField('Year Of Admission', choices = [('2019', '2019'), 
+      ('2020', '2020')])
+    
+   submit = SubmitField("Send")
+
+@app.route('/application', methods=['GET', 'POST'])
+def application():
+    form = ApplicationForm()
+    email = session['email']
+    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    postgreSQL_select_Query = "SELECT admissionStatus FROM application where email=%s;"
+    cursor.execute(postgreSQL_select_Query, (email,))
+    data = cursor.fetchone()
+    
+    if request.method == 'POST':
+        university = form.university.data
+        dname = form.dname.data
+        program = form.program.data
+        term = form.term.data
+        year = form.year.data
+        date = datetime.datetime.today()
+        
+        postgreSQL_select_Query = "SELECT email FROM application where email=%s;"
+        cursor.execute(postgreSQL_select_Query, (email,))
+        #if user exists
+        if cursor.rowcount > 0:
+            postgreSQL_select_Query = "UPDATE application SET university=%s,dname=%s, program=%s, termOfAdmission=%s, yearOfAdmission=%s, where email=%s;"
+            cursor.execute(postgreSQL_select_Query, (university, dname, program, term, year, email))
+            conn.commit()
+        else:
+            postgreSQL_select_Query = "INSERT INTO application (email,university,dname, program, dateOfApp,termOfAdmission, yearOfAdmission) VALUES (%s,%s,%s,%s,%s,%s,%s);"
+            cursor.execute(postgreSQL_select_Query, (email, university, dname, program, date, term, year))
+            conn.commit()
+        return render_template('home.html')
+    else:
+        #if admissionStatus is not null
+        if data is None:
+            return render_template('application.html', form=form)
+        else:
+            flash('Your application has been submitted!')
+            return render_template('home.html')
+            
+            
+    
+
+
 if __name__ == '__main__':
      app.secret_key='secret123'
      app.run(debug=True)
