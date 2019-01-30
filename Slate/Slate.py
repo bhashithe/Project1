@@ -62,21 +62,21 @@ def login():
         password_candidate = request.form['password']
 
         # Get user by username
-        cursor.execute("SELECT email, password FROM applicant WHERE email = %s;", (username,))
+        cursor.execute("SELECT email, password, fname FROM applicant WHERE email = %s;", (username,))
         
         if cursor.rowcount > 0:
             # Get stored hash
             data = cursor.fetchone()
             password = data['password']
+            fname = data['fname']
 
             # Compare Passwords
             if (password_candidate == password):
                 # Passed
                 session['logged_in'] = True
-                session['username'] = username
+                session['username'] = fname
 
-                flash('You are now logged in', 'success')
-                return redirect(url_for('register'))
+                return redirect(url_for('home'))
             else:
                 error = 'Invalid login'
                 return render_template('login.html', error=error)
@@ -87,6 +87,19 @@ def login():
             return render_template('login.html', error=error)
 
     return render_template('login.html')
+
+# Logout
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You are now logged out', 'success')
+    return redirect(url_for('login'))
+
+@app.route('/home', methods=['GET','POST'])
+def home():
+    if request.method == 'POST':
+        return render_template('profile.html')
+    return render_template('home.html')
 
 if __name__ == '__main__':
      app.secret_key='secret123'
