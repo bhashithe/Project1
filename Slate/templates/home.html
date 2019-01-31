@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+  <div class="jumbotron text-center">
+    <h1>Go Panthers! 
+        <br/> <small> Welcome {{session.username}}</small>
+    </h1>
+    {% if session.logged_in != NULL %}
+    <a href="/profile" class="btn btn-primary btn-lg">Update Profile</a>
+    <a href="/application" class="btn btn-primary btn-lg">View Saved Application</a>
+    {% endif %}
+    {% if session.logged_in == NULL %}
+      <a href="/register" class="btn btn-primary btn-lg">Register</a>
+      <a href="/login" class="btn btn-success btn-lg">Login</a>
+    {% endif %}
+  </div>
+{% endblock %}
