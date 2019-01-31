@@ -294,5 +294,5 @@ def departmenyStats(uni, dept, term, year) :
 
 if __name__ == '__main__':
      app.secret_key='secret123'
-     app.run(debug=True)
+     app.run(debug=True, host='tinman.cs.gsu.edu', port=5015)
 
