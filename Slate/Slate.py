@@ -191,8 +191,8 @@ def application():
             cursor.execute(postgreSQL_select_Query, (university, dname, program, term, year, email))
             conn.commit()
         else:
-            postgreSQL_select_Query = "INSERT INTO application (email,university,dname, program, dateOfApp,termOfAdmission, yearOfAdmission) VALUES (%s,%s,%s,%s,%s,%s,%s);"
-            cursor.execute(postgreSQL_select_Query, (email, university, dname, program, date, term, year))
+            postgreSQL_select_Query = "INSERT INTO application (email,university,dname, program, dateOfApp,termOfAdmission, yearOfAdmission, admissionStatus) VALUES (%s,%s,%s,%s,%s,%s,%s);"
+            cursor.execute(postgreSQL_select_Query, (email, university, dname, program, date, term, year, 'PENDING'))
             conn.commit()
         return render_template('home.html')
     else:
@@ -200,11 +200,35 @@ def application():
         if data is None:
             return render_template('application.html', form=form)
         else:
-            flash('Your application has been submitted!')
+            session['status'] = data['admissionstatus']
+            flash('Your application is  ' + session['status'])
             return render_template('home.html')
             
-            
+@app.route('/director', methods=['GET','POST'])
+def director():
+    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cursor.execute("SELECT email FROM application WHERE admissionStatus = \'PENDING\';")
+    data = cursor.fetchall()
     
+    return render_template('director.html', data=data)
+
+@app.route('/decision/<item>', methods=['GET','POST'])
+def decision(item):
+    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    if item == "ACCEPT" or item == "REJECT":
+        postgreSQL_select_Query = "UPDATE application SET admissionStatus=%s where email=%s;"
+        cursor.execute(postgreSQL_select_Query, (item, session['applicantemail']))
+        conn.commit()
+        session.clear()
+        return redirect(url_for('director'))
+    else:
+        session['applicantemail'] = item
+        cursor.execute("SELECT a.fname, a.lname, a.greq, a.grev, a.grea, a.toefl, b.program, b.termofadmission FROM applicant a inner join application b on a.email = b.email WHERE a.email = %s;", (item,))
+        data = cursor.fetchall()
+        return render_template('decision.html', data=data)
+
 
 
 if __name__ == '__main__':

@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="jumbotron text-center">
+<h2 style = "text-align: center;">Applications</h2>
+
+<table style="width:100%"> 
+{% for item in data %}
+<tr>
+    <td><h4>{{item[0]}}</h4></td>
+    <td><a href='/decision/{{item[0]}}' class="btn btn-primary" > View</a></td>
+</tr>
+{% endfor %}
+</table>
+</div>
+{% endblock %}

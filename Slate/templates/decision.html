@@ -1,0 +1,34 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="jumbotron text-center">
+<h2 style = "text-align: center;">Application Details</h2>
+
+<table style="width:100%">
+    <th>FName</th>
+    <th>LName</th>
+    <th>GREQ</th>
+    <th>GREV</th>
+    <th>GREA</th>
+    <th>TOEFL</th>
+    <th>Program</th>
+    <th>Term of Admission</th>
+{% for item in data %}
+<tr>
+    <td>{{item[0]}}</td>
+    <td>{{item[1]}}</td>
+    <td>{{item[2]}}</td>
+    <td>{{item[3]}}</td>
+    <td>{{item[4]}}</td>
+    <td>{{item[5]}}</td>
+    <td>{{item[6]}}</td>
+    <td>{{item[7]}}</td>
+</tr>
+{% endfor %}
+<tr>
+    <td><a href='/decision/ACCEPT' class="btn btn-primary" > Accept </a></td>
+    <td><a href='/decision/REJECT' class="btn btn-primary" > Reject </a></td>
+</tr>
+</table>
+</div>
+{% endblock %}
