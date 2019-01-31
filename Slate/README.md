@@ -12,6 +12,8 @@ Slate - Student Application portal
 
 
 ----------------------------------------   REST Services URL   ---------------------------------------------------------
-'/acceptedStudents/<string:uni>'
-'/universityStats/<string:uni>/<string:term>/<int:year>'
-'/departmentStats/<string:uni>/<string:dept>/<string:term>/<int:year>'
+`/acceptedStudents/<string:uni>`
+
+`/universityStats/<string:uni>/<string:term>/<int:year>`
+
+`/departmentStats/<string:uni>/<string:dept>/<string:term>/<int:year>`
