@@ -2,9 +2,6 @@ import json
 import psycopg2 as dbl
 
 class Database():
-    def __init__(self):
-        """initialize psql database with config"""
-
     @staticmethod
     def getconnection():
         try:
