@@ -21,7 +21,7 @@ def home():
   
 @app.route('/dummy', methods=['GET'])
 def dummy_data():
-  ####################### GET from PAWS database ##################
+  ####################### GET local data from PAWS database in ##################
     data = [{"sid":1009, "email":"varshi@gmail.com", "fname":"Varshi", "lname":"Abeysinghe", "majordept":"CSC", "gradassistant":"Y"}]
     return jsonify(data)
 
@@ -36,7 +36,7 @@ def request_accepted():
   ####################### TBD change 'dummy' to GET from PAWS database ##################
     data = json.loads(requests.get(f"http://tinman.cs.gsu.edu:5013/students/MATH/").content)
     Admin.accepted_req(data)
-    return redirect('http://localhost:3000/#/Grade')
+    return redirect('http://localhost:3000/#/Student')
 
 @app.route('/students/<string:dept>/', methods=['GET'])
 def students_dept(dept):
