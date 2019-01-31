@@ -3,6 +3,7 @@ import psycopg2 as dbl
 import psycopg2.extras
 import sys
 import datetime
+import json
 from flask_wtf import Form
 from wtforms import StringField, PasswordField, TextField, IntegerField, TextAreaField, SubmitField, RadioField, SelectField
 from wtforms import validators, ValidationError
@@ -216,7 +217,7 @@ def director():
 @app.route('/decision/<item>', methods=['GET','POST'])
 def decision(item):
     conn = dbl.connect(database='graddb', user='Cynthia', password='123')
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cursor = conn.cursor()
     if item == "ACCEPT" or item == "REJECT":
         postgreSQL_select_Query = "UPDATE application SET admissionStatus=%s where email=%s;"
         cursor.execute(postgreSQL_select_Query, (item, session['applicantemail']))
@@ -229,6 +230,66 @@ def decision(item):
         data = cursor.fetchall()
         return render_template('decision.html', data=data)
 
+def sentToPAWS():
+    connection = dbl.connect(database='graddb', user='Cynthia', password='123')
+    cursor = connection.cursor()
+    postgreSQL_select_Query = "UPDATE application SET dataSentToPaws = \'Yes\' WHERE admissionStatus = \'ACCEPT\';"
+    cursor.execute(postgreSQL_select_Query)
+    connection.commit()
+
+
+#Send data to Paws
+@app.route('/acceptedStudents/<string:uni>', methods=['GET'])
+def acceptedStudents(uni) :
+    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    cursor = conn.cursor()
+    cursor.execute("UPDATE application SET datasenttopaws = \'No\' WHERE datasenttopaws IS NULL;")
+    conn.commit()
+    cur = conn.cursor()
+    cur.execute('SELECT a.fname, a.lname, a.email FROM applicant a INNER JOIN application b ON a.email = b.email WHERE b.university=%s AND b.admissionStatus=\'ACCEPT\' AND dataSentToPaws <> \'Yes\';',(uni,))
+    columns = ['fname','lname','email']
+    answers = []
+    rows = cur.fetchall()
+    for row in rows:
+        answers.append(dict(zip(columns,row)))
+    conn.close()
+    result = {"students":answers}
+    sentToPAWS()
+    return json.dumps(result, indent=2)
+
+#Given university, term, and year, return university level statistics of applicants 
+#(for each department and program, return number of applicants, number of accepts, number of rejects, and number of pending decisions).
+@app.route('/universityStats/<string:uni>/<string:term>/<int:year>', methods=['GET'])
+def universityStats(uni, term, year) :
+    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    cur = conn.cursor()
+    postgreSQL_select_Query = "SELECT Y.dname, Y.program, Y.accepted, Y.rejected, Y.pending, (Y.accepted + Y.rejected + Y.pending) AS total FROM(select X.dname, X.program, MAX(CASE WHEN X.admissionstatus = 'ACCEPT' THEN X.applicants ELSE 0 END) AS Accepted, MAX(CASE WHEN X.admissionstatus = 'REJECT' THEN X.applicants ELSE 0 END) AS Rejected, MAX(CASE WHEN X.admissionstatus = 'PENDING' THEN X.applicants ELSE 0 END) AS Pending FROM (select dname, program, count(email) as applicants, admissionStatus FROM application WHERE university = %s AND termOfAdmission = %s AND yearOfAdmission = %s GROUP BY dname, program, admissionStatus ) X GROUP BY X.dname, X.program) Y;"
+    cur.execute(postgreSQL_select_Query,(uni,term,year))
+    columns = ['dname','program','accepted','rejected','pending','total']
+    answers = []
+    rows = cur.fetchall()
+    for row in rows:
+        answers.append(dict(zip(columns,row)))
+    conn.close()
+    result = {uni + " students":answers}
+    return json.dumps(result, indent=2)
+
+#Given university, department, term, and year, return department level statistics of applicants 
+#(for each program, return number of applicants, number of accepts, number of rejects, and number of pending decisions).
+@app.route('/departmentStats/<string:uni>/<string:dept>/<string:term>/<int:year>', methods=['GET'])
+def departmenyStats(uni, dept, term, year) :
+    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    cur = conn.cursor()
+    postgreSQL_select_Query = "SELECT Y.program, Y.accepted, Y.rejected, Y.pending, (Y.accepted + Y.rejected + Y.pending) AS total FROM(SELECT X.program,MAX(CASE WHEN X.admissionstatus = 'ACCEPT' THEN X.applicants ELSE 0 END) AS Accepted, MAX(CASE WHEN X.admissionstatus = 'REJECT' THEN X.applicants ELSE 0 END) AS Rejected,MAX(CASE WHEN X.admissionstatus = 'PENDING' THEN X.applicants ELSE 0 END) AS Pending FROM (select program, count(email) as applicants, admissionStatus from application WHERE university = %s AND dname = %s AND termofadmission = %s AND yearOfAdmission = %s GROUP BY program, admissionStatus ) X GROUP BY X.program) Y"
+    cur.execute(postgreSQL_select_Query,(uni,dept,term,year))
+    columns = ['program','accepted','rejected','pending','total']
+    answers = []
+    rows = cur.fetchall()
+    for row in rows:
+        answers.append(dict(zip(columns,row)))
+    conn.close()
+    result = {dept + " students":answers}
+    return json.dumps(result, indent=2)
 
 
 if __name__ == '__main__':
