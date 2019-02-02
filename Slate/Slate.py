@@ -29,11 +29,7 @@ def register():
         email = form.email.data
         password = form.password.data
         try:
-            connection = psycopg2.connect(user="Cynthia",
-                                      password="123",
-                                      host="127.0.0.1",
-                                      port="5432",
-                                      database="graddb")
+            connection = psycopg2.connect(database="ckhan3", user="ckhan3")
             cursor = connection.cursor()
             postgreSQL_select_Query = "INSERT INTO applicant(email,password,fname,lname) values (%s, %s, %s, %s);"
             cursor.execute(postgreSQL_select_Query, (email, password, fname, lname))
@@ -56,7 +52,7 @@ def register():
 # User login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    conn = dbl.connect(database='ckhan3', user='ckhan3')
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     if request.method == 'POST':
@@ -100,7 +96,7 @@ def logout():
     flash('You are now logged out', 'success')
     return redirect(url_for('login'))
 
-@app.route('/home', methods=['GET','POST'])
+@app.route('/', methods=['GET','POST'])
 def home():
     if request.method == 'POST':
         return render_template('profile.html')
@@ -127,7 +123,7 @@ class ProfileForm(Form):
 def profile():
     form = ProfileForm()
     email = session['email']
-    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    conn = dbl.connect(database='ckhan3', user='ckhan3')
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     if request.method == 'POST':
         if form.validate() == False:
@@ -170,7 +166,7 @@ class ApplicationForm(Form):
 def application():
     form = ApplicationForm()
     email = session['email']
-    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    conn = dbl.connect(database='ckhan3', user='ckhan3')
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     postgreSQL_select_Query = "SELECT admissionStatus FROM application where email=%s;"
     cursor.execute(postgreSQL_select_Query, (email,))
@@ -207,7 +203,7 @@ def application():
             
 @app.route('/director', methods=['GET','POST'])
 def director():
-    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    conn = dbl.connect(database='ckhan3', user='ckhan3')
     cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     cursor.execute("SELECT email FROM application WHERE admissionStatus = \'PENDING\';")
     data = cursor.fetchall()
@@ -216,7 +212,7 @@ def director():
 
 @app.route('/decision/<item>', methods=['GET','POST'])
 def decision(item):
-    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    conn = dbl.connect(database='ckhan3', user='ckhan3')
     cursor = conn.cursor()
     if item == "ACCEPT" or item == "REJECT":
         postgreSQL_select_Query = "UPDATE application SET admissionStatus=%s where email=%s;"
@@ -231,7 +227,7 @@ def decision(item):
         return render_template('decision.html', data=data)
 
 def sentToPAWS():
-    connection = dbl.connect(database='graddb', user='Cynthia', password='123')
+    connection = dbl.connect(database='ckhan3', user='ckhan3')
     cursor = connection.cursor()
     postgreSQL_select_Query = "UPDATE application SET dataSentToPaws = \'Yes\' WHERE admissionStatus = \'ACCEPT\';"
     cursor.execute(postgreSQL_select_Query)
@@ -241,13 +237,13 @@ def sentToPAWS():
 #Send data to Paws
 @app.route('/acceptedStudents/<string:uni>', methods=['GET'])
 def acceptedStudents(uni) :
-    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    conn = dbl.connect(database='ckhan3', user='ckhan3')
     cursor = conn.cursor()
     cursor.execute("UPDATE application SET datasenttopaws = \'No\' WHERE datasenttopaws IS NULL;")
     conn.commit()
     cur = conn.cursor()
-    cur.execute('SELECT a.fname, a.lname, a.email FROM applicant a INNER JOIN application b ON a.email = b.email WHERE b.university=%s AND b.admissionStatus=\'ACCEPT\' AND dataSentToPaws <> \'Yes\';',(uni,))
-    columns = ['fname','lname','email']
+    cur.execute('SELECT a.fname, a.lname, a.email, a.aid, b.dname FROM applicant a INNER JOIN application b ON a.email = b.email WHERE b.university=%s AND b.admissionStatus=\'ACCEPT\' AND dataSentToPaws <> \'Yes\';',(uni,))
+    columns = ['fname','lname','email', 'aid', 'dname']
     answers = []
     rows = cur.fetchall()
     for row in rows:
@@ -261,7 +257,7 @@ def acceptedStudents(uni) :
 #(for each department and program, return number of applicants, number of accepts, number of rejects, and number of pending decisions).
 @app.route('/universityStats/<string:uni>/<string:term>/<int:year>', methods=['GET'])
 def universityStats(uni, term, year) :
-    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+    conn = dbl.connect(database='ckhan3', user='ckhan3')
     cur = conn.cursor()
     postgreSQL_select_Query = "SELECT Y.dname, Y.program, Y.accepted, Y.rejected, Y.pending, (Y.accepted + Y.rejected + Y.pending) AS total FROM(select X.dname, X.program, MAX(CASE WHEN X.admissionstatus = 'ACCEPT' THEN X.applicants ELSE 0 END) AS Accepted, MAX(CASE WHEN X.admissionstatus = 'REJECT' THEN X.applicants ELSE 0 END) AS Rejected, MAX(CASE WHEN X.admissionstatus = 'PENDING' THEN X.applicants ELSE 0 END) AS Pending FROM (select dname, program, count(email) as applicants, admissionStatus FROM application WHERE university = %s AND termOfAdmission = %s AND yearOfAdmission = %s GROUP BY dname, program, admissionStatus ) X GROUP BY X.dname, X.program) Y;"
     cur.execute(postgreSQL_select_Query,(uni,term,year))
@@ -277,8 +273,8 @@ def universityStats(uni, term, year) :
 #Given university, department, term, and year, return department level statistics of applicants 
 #(for each program, return number of applicants, number of accepts, number of rejects, and number of pending decisions).
 @app.route('/departmentStats/<string:uni>/<string:dept>/<string:term>/<int:year>', methods=['GET'])
-def departmenyStats(uni, dept, term, year) :
-    conn = dbl.connect(database='graddb', user='Cynthia', password='123')
+def departmentStats(uni, dept, term, year) :
+    conn = dbl.connect(database='ckhan3', user='ckhan3')
     cur = conn.cursor()
     postgreSQL_select_Query = "SELECT Y.program, Y.accepted, Y.rejected, Y.pending, (Y.accepted + Y.rejected + Y.pending) AS total FROM(SELECT X.program,MAX(CASE WHEN X.admissionstatus = 'ACCEPT' THEN X.applicants ELSE 0 END) AS Accepted, MAX(CASE WHEN X.admissionstatus = 'REJECT' THEN X.applicants ELSE 0 END) AS Rejected,MAX(CASE WHEN X.admissionstatus = 'PENDING' THEN X.applicants ELSE 0 END) AS Pending FROM (select program, count(email) as applicants, admissionStatus from application WHERE university = %s AND dname = %s AND termofadmission = %s AND yearOfAdmission = %s GROUP BY program, admissionStatus ) X GROUP BY X.program) Y"
     cur.execute(postgreSQL_select_Query,(uni,dept,term,year))
