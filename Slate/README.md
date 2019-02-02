@@ -11,9 +11,9 @@ Following are the functionalities of this portal:
 And provides the following REST service requests
 
 - [X] List of accepted applicants
-{Sample URL} - tinman.cs.gsu.edu:5015/acceptedStudents/GSU
+* {Sample URL} - tinman.cs.gsu.edu:5015/acceptedStudents/GSU
 - [X] University level statistics of applicants
-{Sample URL} - tinman.cs.gsu.edu:5015/universityStats/GSU/FA/2019
+* {Sample URL} - tinman.cs.gsu.edu:5015/universityStats/GSU/FA/2019
 - [X] Department level statistics of applicants
-{Sample URL} - tinman.cs.gsu.edu:5015/departmentStats/GSU/CSC/FA/2019
+* {Sample URL} - tinman.cs.gsu.edu:5015/departmentStats/GSU/CSC/FA/2019
 
