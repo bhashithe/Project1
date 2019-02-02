@@ -6,6 +6,9 @@
 			<p>Logged in as ~<span class="muted">{{user.getdata()[1] +' '+ user.getdata()[2]}}</span>: &nbsp;<a href="/logout/">Log out</a></p>
 		{% endif %}
 	  </div>
+	  <div class="navbar-nav left">
+		  Check Schedule
+	  </div>
         <form method="">
             <select name="semester" id="sems" onchange="populate(get_courses)">
             {% for sem in user.getsems() %}
@@ -24,6 +27,7 @@
                 <option value="{{dept[0]}}">{{dept[0]}}</option>
             {% endfor %}
             </select>
+			<a href="/student/schedule/" class="btn btn-success">Check schedule</a>
         </form>
 	{% endif %}
 <script>
@@ -40,7 +44,7 @@ var get_courses = function (callback)
     if(sems != "" && years != "")
     {
         var xhttp = new XMLHttpRequest();
-        xhttp.open("GET", "http://tinman.cs.gsu.edu:5013/students/my-courses/"+year+"/"+term+"/", true);
+        xhttp.open("GET", "http://tinman.cs.gsu.edu:5001/students/my-courses/"+year+"/"+term+"/", true);
 
         xhttp.onreadystatechange = function() {
             result = JSON.parse(xhttp.responseText)
@@ -80,7 +84,7 @@ function populate(callback)
     if(sems != "" && years != "")
     {
         var xhttp = new XMLHttpRequest();
-        xhttp.open("POST", "http://tinman.cs.gsu.edu:5013/home/data/", true);
+        xhttp.open("POST", "http://tinman.cs.gsu.edu:5001/home/data/", true);
         xhttp.onreadystatechange = function() {
             courses = JSON.parse(xhttp.responseText)
             if (this.readyState == 4 && this.status == 200) {
@@ -145,9 +149,9 @@ function process(element)
     {
         var xhttp = new XMLHttpRequest();
         if(checked)
-            xhttp.open("POST", "http://tinman.cs.gsu.edu:5013/home/add/", true);
+            xhttp.open("POST", "http://tinman.cs.gsu.edu:5001/home/add/", true);
         else
-            xhttp.open("POST", "http://tinman.cs.gsu.edu:5013/home/drop/", true);
+            xhttp.open("POST", "http://tinman.cs.gsu.edu:5001/home/drop/", true);
 
         xhttp.onreadystatechange = function() {
             result = JSON.parse(xhttp.responseText)

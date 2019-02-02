@@ -14,7 +14,7 @@ class Admin():
 		with connection.cursor() as cur:
 			for data in alldata:
 				try:
-					sql = f"INSERT INTO student (sid, email, fname, lname, majordept, gradassistant) VALUES({data['sid']}, '{data['email']}', '{data['fname']}', '{data['lname']}', '{data['majordept']}', '{data['gradassistant']}')"
+					sql = f"INSERT INTO student (sid, email, fname, lname, majordept ) VALUES({data['aid']}, '{data['email']}', '{data['fname']}', '{data['lname']}', '{data['dname']}')"
 					cur.execute(sql)
 					connection.commit()
 				except (Exception, dbl.DatabaseError) as e:

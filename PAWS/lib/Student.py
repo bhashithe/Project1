@@ -18,7 +18,9 @@ class Student():
             try:
                 cur.execute(f'SELECT email, fname, lname FROM student WHERE sid={self.sid}')
                 #since only one student
-                return cur.fetchone() 
+                row = cur.fetchone() 
+                #ret = {'email':row[0], 'fname':row[1], 'lname':row[2]}
+                return row
             except (Exception, dbl.DatabaseError) as e:
                 print(e)
 
@@ -117,8 +119,14 @@ class Student():
         connection = Database.getconnection()
         with connection.cursor() as cur:
             try:
-                cur.execute(f"SELECT * FROM student WHERE majordept LIKE '{dept}%'")
-                return cur.fetchall()
+                cur.execute(f"SELECT sid, email, fname, lname FROM student WHERE majordept LIKE '{dept}%'")
+                rows = cur.fetchall()
+                rets = []
+                for row in rows:
+                    columns = ['sid','email','fname','lname']
+                    ret = dict(zip(columns, row))
+                    rets.append(ret)
+                return rets
             except (Exception, dbl.DatabaseError) as e:
                 print(e)
 
@@ -129,6 +137,12 @@ class Student():
         with connection.cursor() as cur:
             try:
                 cur.execute(f"SELECT DISTINCT enroll.* FROM enroll INNER JOIN section ON(enroll.crn=section.crn) WHERE section.cprefix LIKE '{dept}%' and enroll.term='{term}'")
-                return cur.fetchall()
+                rows = cur.fetchall()
+                rets = []
+                for row in rows:
+                    columns = ['sid','term','year','crn','grade']
+                    ret = dict(zip(columns, row))
+                    rets.append(ret)
+                return rets
             except (Exception, dbl.DatabaseError) as e:
                 print(e)

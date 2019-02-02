@@ -1,14 +1,17 @@
 from flask import Flask, request, render_template, session, redirect, Session
 from flask.json import jsonify
+import requests
+import json
+
+#created library files
 from lib.Database import Database
 from lib.Student import Student
 from lib.Admin import Admin
 from lib.Department import Department
 
-import requests
-import json
 
 app = Flask(__name__)
+app.config['WTF_CSRF_ENABLED'] = False
 sess = Session()
 
 @app.route('/', methods=['GET'])
@@ -53,7 +56,7 @@ def login():
             session['logged_in'] = False
             return "wrong"
     else:
-        return "someshit went wront"
+        return "something bad happened"
 
 @app.route('/logout/', methods=['GET'])
 def logout():
@@ -61,14 +64,35 @@ def logout():
    session['id'] = False
    return redirect('/login/')
 
-"""
-* Services
-"""
+@app.route('/student/schedule/', methods=['GET'])
+def schedule():
+	if session.get('logged_in'):
+		s = Student(session['id'])
+		d = Department()
+		return render_template('schedule.html', user=s, dept=d)
+	else:
+		return redirect('/login/')
+
+@app.route('/student/fees/')
+def fees():
+	if session.get('logged_in'):
+		s = Student(session.get('id'))
+		return render_template('fees.html', user=s, title='Fees', userid = session.get('id'))
+	else:
+		return redirect('/login/')
+
+@app.route('/Admin/', methods=['GET'])
+def admin():
+   return render_template('admin.html', title='Admin')
+
+"""""""""""""""""""""
+**** Services
+"""""""""""""""""""""
 
 @app.route('/home/data/', methods=['POST'])
 def home_data():
     term, year, dept = request.json['term'], request.json['year'], request.json['dept']
-    courses = Department.getcourses_data(term, year, dept)
+    courses = Department.get_home_data(term, year, dept)
     return jsonify(courses)
 
 @app.route('/home/add/', methods=['POST'])
@@ -90,16 +114,20 @@ def registered_corses(year, term):
     s = Student(session['id'])
     return jsonify(s.my_courses(term, year))
 
-@app.route('/dummy', methods=['GET'])
-def dummy_data():
-    data = [{"sid":1009, "email":"varshi@gmail.com", "fname":"Varshi", "lname":"Abeysinghe", "majordept":"CSC", "gradassistant":"Y"}]
-    return jsonify(data)
+@app.route('/students/course/', methods=['POST'])
+def course_info():
+	if request.json:
+		crns = [int(crn) for crn in request.json]
+		d = Department()
+		return jsonify(d.get_course_info(crns))
+	else:
+		return "unsuccessfull"
 
 @app.route('/request/', methods=['GET'])
 def request_accepted():
-    data = json.loads(requests.get('http://localhost:5013/dummy').content)
-    Admin.accepted_req(data)
-    return 'student added'
+	data = json.loads(requests.get('http://tinman.cs.gsu.edu:5015/acceptedStudents/GSU').content)
+	Admin.accepted_req(data['students'])
+	return 'student added'
 
 @app.route('/students/<string:dept>/', methods=['GET'])
 def students_dept(dept):
@@ -122,4 +150,4 @@ def update_grade(sid, crn):
 if __name__ =='__main__':
     app.secret_key = 'super secret key here gghalfndfacvdaewa'
     app.config['SESSION_TYPE'] = 'filesystem'
-    app.run(host='tinman.cs.gsu.edu', debug=True, port=5013)
+    app.run(host='tinman.cs.gsu.edu', debug=True, port=5001)
