@@ -1,0 +1,111 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="row">
+        <div class="offset-lg-4 col-lg-6">
+           <h3>Schedule</h3>
+            <form method="">
+                <select name="semester" id="sems" onchange="populate(get_courses)">
+                {% for sem in user.getsems() %}
+                    <option value="{{sem[0]}}">{{sem[0]}}</option>
+                {% endfor %}
+                </select>
+
+                <select name="year" id="years" onchange="populate(get_courses)">
+                {% for year in user.getyears() %}
+                    <option value="{{year[0]}}">{{year[0]}}</option>
+                {% endfor %}
+                </select>
+
+            </form>
+        </div>
+      </div>
+	</form>
+
+<script>
+var globalResult = []
+
+var get_courses = function ()
+{
+    term = document.getElementById("sems").value;
+    year = document.getElementById("years").value;
+    if(sems != "" && years != "")
+    {
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("GET", "http://tinman.cs.gsu.edu:5001/students/my-courses/"+year+"/"+term+"/", true);
+
+        xhttp.onreadystatechange = function() {
+            result = JSON.parse(xhttp.responseText)
+            if (this.readyState == 4 && this.status == 200)
+            {
+                for(var i=0; i<result.length; i++)
+                {
+                    for(var j=0; j<1; j++)
+                        globalResult[i] = result[i][j]
+                }
+            }
+            else
+            {
+                console.error(result)
+            }
+        };
+
+        xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); 
+        xhttp.send();
+    }
+    
+};
+
+function populate(callback)
+{
+    callback();
+    res = globalResult;
+    if(sems != "" && years != "")
+    {
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("POST", "/students/course/", true);
+        xhttp.onreadystatechange = function() {
+            courses = JSON.parse(xhttp.responseText)
+            if (this.readyState == 4 && this.status == 200) {
+                var t = document.createElement("TABLE")
+                t.classList.add('table')
+                var headings = ["cno", "title","hours", "day", "start", "end"]
+                var row = t.insertRow(-1);
+
+                for(var i=0; i<headings.length; i++)
+                {
+                    var headerCell = document.createElement("TH");
+                    headerCell.innerHTML = headings[i];
+                    row.appendChild(headerCell);
+                }
+
+                for(var i=0; i<courses.length; i++)
+                {
+                    var row = t.insertRow(-1)
+                    var crn = 0
+                    for(var j=0; j<headings.length; j++)
+                    {
+                        var cell = row.insertCell(-1)
+                        cell.innerHTML = courses[i][headings[j]]
+                    }
+
+                }
+                var dvTable = document.getElementById("dvtable");
+                dvTable.innerHTML = "";
+                dvTable.appendChild(t);
+            }
+            else
+            {
+                //console.error(courses)
+            }
+        };
+
+        xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); 
+        xhttp.send(JSON.stringify(res));
+        console.log(res)
+    }
+}
+document.onload = populate(get_courses);
+</script>
+<div id="dvtable">
+</div>
+{% endblock content %}
