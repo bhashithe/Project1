@@ -31,24 +31,45 @@ def dummy_data():
 #     data = json.loads(requests.get(f"http://tinman.cs.gsu.edu:5013/students/{dept}/").content)
 #     Admin.accepted_req(data)
 #     return 'student added'
-@app.route('/request/', methods=['GET'])
-def request_accepted():
+@app.route('/request/students', methods=['GET'])
+def request_student_accepted():
   ####################### TBD change 'dummy' to GET from PAWS database ##################
-    data = json.loads(requests.get(f"http://tinman.cs.gsu.edu:5013/students/MATH/").content)
+    data = json.loads(requests.get(f"http://tinman.cs.gsu.edu:5013/students/CSC/").content)
+    Admin.accepted_student_req(data)
+    return 'sucess students'
+
+@app.route('/request/courses', methods=['GET'])
+def request_course_accepted():
+  ####################### TBD change 'dummy' to GET from PAWS database ##################
+    data = json.loads(requests.get(f"http://tinman.cs.gsu.edu:5013/courses/CSC/").content)
+    Admin.accepted_course_req(data)
+    return 'success courses'
+
+@app.route('/request/<string:term>/', methods=['GET'])
+def request_enrollment_accepted(term):
+  ####################### TBD change 'dummy' to GET from PAWS database ##################
+    data = json.loads(requests.get(f"tinman.cs.gsu.edu:5013/students/enrolled/CSC/{term}").content)
     Admin.accepted_req(data)
-    return redirect('http://localhost:3000/#/Student')
+    return 'success enrollments'
 
-@app.route('/students/<string:dept>/', methods=['GET'])
-def students_dept(dept):
-    return jsonify(Student.student_list(dept))
+@app.route('/request/grades', methods=['GET'])
+def request_grade_accepted():
+  ####################### TBD change 'dummy' to GET from PAWS database ##################
+    data = json.loads(requests.get(f"http://tinman.cs.gsu.edu:5013/grades/CSC/").content)
+    Admin.accepted_req(data)
+    return 'success grade'
 
-@app.route('/courses/<string:dept>/', methods=['GET'])
-def course_dept(dept):
-    return jsonify(Department.getcourses(dept))
+# @app.route('/students/<string:dept>/', methods=['GET'])
+# def students_dept(dept):
+#     return jsonify(Student.student_list(dept))
 
-@app.route('/students/enrolled/<string:dept>/<string:term>/', methods=['GET'])
-def enrollment(dept, term):
-    return jsonify(Student.enrollment_list(dept, term))
+# @app.route('/courses/<string:dept>/', methods=['GET'])
+# def course_dept(dept):
+#     return jsonify(Department.getcourses(dept))
+
+# @app.route('/students/enrolled/<string:dept>/<string:term>/', methods=['GET'])
+# def enrollment(dept, term):
+#     return jsonify(Student.enrollment_list(dept, term))
 
 @app.route('/Admin/student/<int:sid>/assistantship/<int:crn>/', methods=['POST'])
 def update_assistantship(sid):

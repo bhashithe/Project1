@@ -17,11 +17,11 @@ class Student():
             try:
                 cur.execute(f'SELECT email, fname, lname FROM student WHERE sid={self.sid}')
                 #since only one student
-                return cur.fetchone() 
+                return cur.fetchone()
             except (Exception, dbl.DatabaseError) as e:
                 print(e)
 
-    
+
     @staticmethod
     def student_list(dept):
         connection = Database.getconnection()
@@ -42,3 +42,4 @@ class Student():
                 return cur.fetchall()
             except (Exception, dbl.DatabaseError) as e:
                 print(e)
+~                                                     

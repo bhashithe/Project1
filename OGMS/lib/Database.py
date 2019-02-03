@@ -19,7 +19,7 @@ class Database():
     # @staticmethod
     #     def getconnection():
     #         try:
-    #             connection = dbl.connect(dbname='lina_sample_db_project', user='lina')
+    #             connection = dbl.connect(dbname='llin15', user='llin15')
     #         except (Exception, dbl.DatabaseError) as e:
     #             print("Connection error")
     #             print(e)

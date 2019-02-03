@@ -1,4 +1,4 @@
-\c lina_sample_db_project
+\c llin15
 
 drop table ostudent cascade;
 create table ostudent (

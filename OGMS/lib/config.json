@@ -2,5 +2,13 @@
 	'host': 'localhost',
 	'dbname': 'llin15',
 	'user': 'llin15',
-	'password': 'llin15password'
+	'password': 'emma15emma'
 }
+
+// remote database llin15
+// {
+// 	'host': 'localhost',
+// 	'dbname': 'llin15',
+// 	'user': 'llin15',
+// 	'password': 'emma15emma'
+// }

@@ -7,7 +7,7 @@ class Department():
 
     def __init__(self):
         self.connection = Database.getconnection()
-    
+
     @staticmethod
     def getcourses(dept):
         connection = Database.getconnection()
