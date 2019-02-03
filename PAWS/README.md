@@ -1,22 +1,22 @@
 PAWS - Bhashithe
 
-## Functions to creaete
+## Functions supported by the system
 
 - [x] Register service 
 - [x] Choose semester
-- [x] Add drop coursesf
-- [ ] View class schedule
-- [ ] View fees
+- [x] Add drop courses
+- [x] View class schedule
+- [x] View fees
 - [x] Request students from SLATE
-- [ ] Statistics
+- [x] Statistics
 
-## Services to create
+## Services supported by the system
 
 - [x] List of students of a department
 	- `tinman.cs.gsu.edu:5013/students/CSC/` GET
 - [x] List of courses of the department
 	- `tinman.cs.gsu.edu:5013/courses/CSC/` GET
-- [x] List of enrollment in a deparment
+- [x] List of enrollment in a department
 	- `tinman.cs.gsu.edu:5013/students/enrolled/CSC/SU` GET
 - [x] Update a grade of a student
 	- `tinman.cs.gsu.edu:5013/Admin/students/<sid>/grade/10101/` POST
