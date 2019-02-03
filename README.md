@@ -12,18 +12,18 @@ We shall use Python FLASK, REACT and POSTGRES as frameworks and APIs for this pr
 
 # SLATE
 
-# lib
+## lib
 Folder contains the different forms (Registration, Application and Update status) which are used as class instances in Slate.py 
 
-# template
+## template
 Contains all html files used to generate the front end interfaces
 
-# SQL
+## SQL
 Folder contains 2 files 
 - slate.sql which creates database ckhan3 and tables 'department', 'program', 'applicant', 'application' used to store and retrive student application information.
 - restservices.sql contains sql commands used to complete the three rest service calls.
 
-# Execute
+## Execute
 to execute use command:
 python3 Slate.py
 
