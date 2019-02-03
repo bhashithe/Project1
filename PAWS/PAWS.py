@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, session, redirect, Session
 from flask.json import jsonify
+from flask_cors import CORS
 import requests
 import json
 
@@ -11,6 +12,7 @@ from lib.Department import Department
 
 
 app = Flask(__name__)
+CORS(app)
 app.config['WTF_CSRF_ENABLED'] = False
 sess = Session()
 
@@ -81,9 +83,20 @@ def fees():
 	else:
 		return redirect('/login/')
 
+@app.route('/student/assistantship/<int:sid>/')
+def get_assistantship(sid):
+	res = json.loads(requests.get(f"http://tinman.cs.gsu.edu:5020/student/assistantship/{sid}/").content)
+	return jsonify(res)
+
 @app.route('/Admin/', methods=['GET'])
 def admin():
-   return render_template('admin.html', title='Admin')
+	s = Student(0)
+	return render_template('admin.html', title='Admin', user=s)
+
+@app.route('/Admin/stats/<string:term>/<int:year>/', methods=['GET'])
+def stats(term, year):
+	data = json.loads(requests.get(f"http://tinman.cs.gsu.edu:5015/universityStats/GSU/{term}/{year}").content)
+	return jsonify(data[list(data.keys())[0]])
 
 """""""""""""""""""""
 **** Services
@@ -113,6 +126,14 @@ def deregister_course():
 def registered_corses(year, term):
     s = Student(session['id'])
     return jsonify(s.my_courses(term, year))
+
+@app.route('/students/courses/count/', methods=['POST'])
+def count_courses():
+	if request.json:
+		s = Student(session.get('id'))
+		count = s.count_courses(request.json['term'], request.json['year'])
+		print(count)
+		return jsonify(count[0])
 
 @app.route('/students/course/', methods=['POST'])
 def course_info():

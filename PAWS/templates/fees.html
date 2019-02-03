@@ -4,13 +4,13 @@
         <div class="offset-lg-4 col-lg-6">
            <h3>Fees</h3>
             <form method="">
-                <select name="semester" id="sems" onchange="calculate_fees(get_courses)">
+                <select name="semester" id="sems" onchange="calculate_fees(get_courses, get_assistantship)">
                 {% for sem in user.getsems() %}
                     <option value="{{sem[0]}}">{{sem[0]}}</option>
                 {% endfor %}
                 </select>
 
-                <select name="year" id="years" onchange="calculate_fees(get_courses)">
+                <select name="year" id="years" onchange="calculate_fees(get_courses, get_assistantship)">
                 {% for year in user.getyears() %}
                     <option value="{{year[0]}}">{{year[0]}}</option>
                 {% endfor %}
@@ -23,25 +23,24 @@
 
 <script>
 var globalResult = []
+var assistantship = ''
 
 var get_courses = function ()
 {
     term = document.getElementById("sems").value;
     year = document.getElementById("years").value;
+    data = {'term': term, 'year':year}
+    console.log(data)
     if(sems != "" && years != "")
     {
         var xhttp = new XMLHttpRequest();
-        xhttp.open("GET", "http://tinman.cs.gsu.edu:5001/students/my-courses/"+year+"/"+term+"/", true);
+        xhttp.open("POST", "http://tinman.cs.gsu.edu:5001/students/courses/count/", true);
 
         xhttp.onreadystatechange = function() {
             result = JSON.parse(xhttp.responseText)
             if (this.readyState == 4 && this.status == 200)
             {
-                for(var i=0; i<result.length; i++)
-                {
-                    for(var j=0; j<1; j++)
-                        globalResult[i] = result[i][j]
-                }
+                globalResult = result
             }
             else
             {
@@ -50,39 +49,55 @@ var get_courses = function ()
         };
 
         xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); 
-        xhttp.send();
+        xhttp.send(JSON.stringify(data));
     }
     
 };
 
-function calculate_fees(callback)
+function calculate_fees(courses, asstship)
 {
-    callback()
-    num_courses = globalResult.length
-    total_fee = num_courses * 500
-    divtable = document.getElementById('dvtable')
-    divtable.innerHTML = total_fee
+    courses();
+    asstship();
+    num_courses = globalResult;
+    asst = assistantship
+    fee = num_courses * 500
+    total_fee = fee;
+    divtable = document.getElementById('fee');
+    divtable.innerHTML = fee;
+    if (asst[0] == 'Y')
+    {
+        total_fee = fee - 1000
+        if (total_fee < 0)
+            total_fee = 0
+        console.log("grad redux: " + 1000)
+        asidis = document.getElementById("asidis")
+        asidis.innerHTML = 1000
+    }
+    else
+    {
+        console.log("grad redux: " + 0)
+        asidis = document.getElementById("asidis")
+        asidis.innerHTML = 0
+    }
+    tots = document.getElementById("tots");
+    tots.innerHTML = total_fee;
 }
 
 function get_assistantship()
 {
-
     term = document.getElementById("sems").value;
     year = document.getElementById("years").value;
+    data = {'term': term, 'year':year}
     if(sems != "" && years != "")
     {
         var xhttp = new XMLHttpRequest();
-        xhttp.open("GET", "http://tinman.cs.gsu.edu:5020/student/assistantship/{{userid}}/", true);
+        xhttp.open("GET", "http://tinman.cs.gsu.edu:5001/student/assistantship/{{userid}}/", true);
 
         xhttp.onreadystatechange = function() {
             result = JSON.parse(xhttp.responseText)
             if (this.readyState == 4 && this.status == 200)
             {
-                for(var i=0; i<result.length; i++)
-                {
-                    for(var j=0; j<1; j++)
-                        globalResult[i] = result[i][j]
-                }
+                assistantship = result
             }
             else
             {
@@ -93,10 +108,14 @@ function get_assistantship()
         xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8"); 
         xhttp.send();
     }
-    
 }
 
+document.onload = calculate_fees(get_courses, get_assistantship);
+
 </script>
-<div id="dvtable">
+<div id="tbl">
+    <p>Total fees for classes registered: &nbsp;<span id="fee"></span></p>
+    <p>Graduate Assistantship reduction: &nbsp;<span id="asidis"></span></p>
+    <p>Total payment: &nbsp; <b id="tots"></b></p>
 </div>
 {% endblock content %}

@@ -103,6 +103,17 @@ class Student():
                 self.connection.rollback()
                 print(e)
 
+    def count_courses(self, term, year):
+        """
+        select all courses that I  have registered
+        """
+        with self.connection.cursor() as cur:
+            try:
+                cur.execute(f"SELECT COUNT(crn) FROM enroll WHERE term='{term}' AND year={year} AND sid = {self.sid}")
+                return cur.fetchone()
+            except (Exception, dbl.DatabaseError) as e:
+                print(e)
+
     def my_courses(self, term, year):
         """
         select all courses that I  have registered
