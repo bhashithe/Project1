@@ -8,7 +8,10 @@ We shall use Python FLASK, REACT and POSTGRES as frameworks and APIs for this pr
 - [X] Paws - developed by Bhashithe Abeysinghe
     - URL - `tinman.cs.gsu.edu:5001/`
 - [X] OGMS - developed by Lina Lin
-    - URL - `tinman.cs.gsu.edu:5020/`
+    - Server side implementation by `python, flask`
+        - `tinman.cs.gsu.edu:5020/`
+    - Client side implemented by `react`
+        - Hosted locally
 
 # SLATE
 
