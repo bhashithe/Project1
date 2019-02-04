@@ -32,7 +32,7 @@ python3 Slate.py
 
 # PAWS
 
-## library
+## Library
 
 A library with some specific functions for different entities in the system was created. This is located at `PAWS/lib/` directory. Library functions related to `Admin`, `Detaprtment`, `Student` and `Database` are implemented in respective classes. Then these classes are instantiated and used whenever needed.
 
